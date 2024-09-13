@@ -17,15 +17,14 @@ contract EventManager {
         address[] attendees;
 
     }
+    mapping(address => bool) public isRegistered;
 
     mapping (string => Event) events;
     mapping (string => address) eventNFTS;
     uint eventCount;
 
-    // function generateNFT() internal returns (address ){
-
-    // }
     event EventCreated(string title);
+    event Registered(address user);
 
     function createEvent(string memory _title, address _NFTaddress, uint _startDate ) external {
         require(msg.sender != address(0), "Address Zero Detected");
@@ -47,28 +46,22 @@ contract EventManager {
 
 
     function registerEvent(string memory _eventName) external {
-        require(events[_eventName], "Event does not exist");
-        
-
+        Event storage _event = events[_eventName];
          require(msg.sender != address(0), "Invalid input");
-        Event storage _event = events[_eventId];
-        
-        require(_event.isCompleted == false, "Event completed");
-        require(_event.endDate > block.timestamp, "Event duration has elapsed");
-        require(!hasRegistered[msg.sender][_eventId], "Already Registered");
-        require(IERC721(requiredNftAddress).balanceOf(msg.sender) > 0, "Must hold at least one NFT to register");
+        require(!isRegistered[msg.sender], "Already Registered");
+        require(IERC721(_event.NFTAddress).balanceOf(msg.sender) > 0, "NFT not missing");
 
-        _event.attendees += 1;
-        hasRegistered[msg.sender][_eventId] = true;
-        registeredAddresses[_eventId].push(msg.sender);
+        _event.attendees.push(msg.sender);
+        isRegistered[msg.sender] = true;
+
     }
 
-    function checkUserRegistration(uint256 _eventId) external view returns (bool) {
-        return hasRegistered[msg.sender][_eventId];
+    function checkUserRegistration() external view returns (bool) {
+        return isRegistered[msg.sender];
     }
 
-    function getAttendees(uint256 _eventName) external view returns (address[] memory) {
-        return events[_eventName];
+    function getAttendees(string memory _eventName) external view returns (address[] memory) {
+        return events[_eventName].attendees;
         
     }
 }
