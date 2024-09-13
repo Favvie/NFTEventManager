@@ -47,7 +47,7 @@ contract EventManager {
 
     function registerEvent(string memory _eventName) external {
         Event storage _event = events[_eventName];
-         require(msg.sender != address(0), "Invalid input");
+         require(msg.sender != address(0), "Address Zero Detected");
         require(!isRegistered[msg.sender], "Already Registered");
         require(IERC721(_event.NFTAddress).balanceOf(msg.sender) > 0, "NFT not missing");
 
