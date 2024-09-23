@@ -15,9 +15,9 @@ contract EventManager {
         uint startDate;
         uint maxAttendees;
         address[] attendees;
-    }
 
-    mapping(address => mapping (string => bool)) public isRegistered;
+    }
+        mapping(address => bool) isRegistered;
 
     mapping (string => Event) events;
     mapping (string => address) eventNFTS;
@@ -43,21 +43,22 @@ contract EventManager {
         emit EventCreated(_title);
 
     }
-
+    
 
     function registerEvent(string memory _eventName) external {
         Event storage _event = events[_eventName];
          require(msg.sender != address(0), "Address Zero Detected");
-        require(isRegistered[msg.sender][_eventName], "Already Registered");
+        require(!_event.isRegistered[msg.sender], "Already Registered");
         require(IERC721(_event.NFTAddress).balanceOf(msg.sender) > 0, "NFT not missing");
 
         _event.attendees.push(msg.sender);
-        isRegistered[msg.sender][_eventName] = true;
+        _event.isRegistered[msg.sender] = true;
 
     }
 
     function checkUserRegistration(string memory _eventName) external view returns (bool) {
-        return isRegistered[msg.sender][_eventName];
+        Event storage _event = events[_eventName];
+        return _event.isRegistered[msg.sender];
     }
 
     function getAttendees(string memory _eventName) external view returns (address[] memory) {
